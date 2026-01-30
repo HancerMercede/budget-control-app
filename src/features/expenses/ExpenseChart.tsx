@@ -29,13 +29,13 @@ export const ExpenseChart = ({ selectedMonth }: Props) => {
       <h3 className="text-white text-sm font-bold uppercase mb-4">
         Gastos por Categoría
       </h3>
-      <div className="h-[300px] w-full">
+      <div className="h-[200px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
               innerRadius={60}
-              outerRadius={80}
+              outerRadius={100}
               paddingAngle={5}
               dataKey="value"
             >
