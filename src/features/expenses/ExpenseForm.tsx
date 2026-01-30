@@ -38,6 +38,36 @@ export const ExpenseForm = () => {
     }
   };
 
+  const CATEGORY_LIST = [
+    {
+      Id: 1,
+      name: "Alimento",
+    },
+    {
+      Id: 2,
+      name: "Salud",
+    },
+
+    {
+      Id: 3,
+      name: "Transporte",
+    },
+
+    {
+      Id: 4,
+      name: "Ocio",
+    },
+
+    {
+      Id: 5,
+      name: "Gastos Fijos",
+    },
+
+    {
+      Id: 6,
+      name: "Obra Social",
+    },
+  ];
   return (
     <div className="bg-[#1e293b] p-6 rounded-xl border border-gray-800 shadow-xl">
       <h3 className="text-white font-semibold mb-6 flex items-center gap-2">
@@ -81,11 +111,11 @@ export const ExpenseForm = () => {
               onChange={(e) => setCategory(e.target.value)}
               className="w-full bg-[#0f172a] border border-gray-700 rounded-lg p-3 text-white font-bold focus:ring-2 focus:ring-blue-500 outline-none appearance-none"
             >
-              <option value="Alimento">Alimento</option>
-              <option value="Salud">Salud</option>
-              <option value="Transporte">Transporte</option>
-              <option value="Ocio">Ocio</option>
-              <option value="Gastos Fijos">Gastos Fijos</option>
+              {CATEGORY_LIST.map((c) => (
+                <option key={c.Id} value={c.name}>
+                  {c.name}
+                </option>
+              ))}
             </select>
           </div>
           <div className="flex flex-col gap-2">
