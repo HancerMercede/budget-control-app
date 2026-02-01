@@ -11,14 +11,14 @@ import { useAuth } from "../hooks/useAuth";
 import { BudgetCard } from "../components/Budget/BugedCard";
 import { LoadComponent } from "../components/Load/LoadComponent";
 import { Header } from "../components/Header/Header";
+import { getCurrentMonthName } from "../components/utils/GetCurrentMonth";
 
 export const DashboardPage = () => {
   const { user } = useAuth();
-  const [selectedMonth, setSelectedMonth] = useState("Enero");
-  const { expenses, consumed, remaining, loading } = useExpenses(
-    selectedMonth,
-    user?.uid ?? "",
-  );
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthName());
+
+  const { expenses, consumed, remaining, loading, filteredExpenses } =
+    useExpenses(selectedMonth, user?.uid ?? "");
 
   if (loading) {
     return <LoadComponent />;
@@ -50,7 +50,7 @@ export const DashboardPage = () => {
             currentMonth={selectedMonth}
             onMonthChange={setSelectedMonth}
           />
-          <ExpenseTable expenses={expenses} />
+          <ExpenseTable expenses={filteredExpenses} />
         </div>
 
         <div className="space-y-6">

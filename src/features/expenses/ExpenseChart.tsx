@@ -29,7 +29,7 @@ export const ExpenseChart = ({ selectedMonth }: Props) => {
       <h3 className="text-white text-sm font-bold uppercase mb-4">
         Gastos por Categoría
       </h3>
-      <div className="h-[200px] w-full">
+      <div className="h-[200px] w-full backdrop-blur-xl">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -46,6 +46,7 @@ export const ExpenseChart = ({ selectedMonth }: Props) => {
                 />
               ))}
             </Pie>
+
             <Tooltip
               contentStyle={{
                 backgroundColor: "#0f172a",
