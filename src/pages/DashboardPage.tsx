@@ -17,8 +17,10 @@ export const DashboardPage = () => {
   const { user } = useAuth();
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonthName());
 
-  const { expenses, consumed, remaining, loading, filteredExpenses } =
-    useExpenses(selectedMonth, user?.uid ?? "");
+  const { consumed, remaining, loading, filteredExpenses } = useExpenses(
+    selectedMonth,
+    user?.uid ?? "",
+  );
 
   if (loading) {
     return <LoadComponent />;
