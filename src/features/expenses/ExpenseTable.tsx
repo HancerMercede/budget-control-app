@@ -34,7 +34,7 @@ export const ExpenseTable = ({ expenses }: Props) => {
               <tr>
                 <td
                   colSpan={4}
-                  className="px-6 py-10 text-center text-gray-500 italic"
+                  className="px-6 py-10 d-flex text-center text-gray-500 italic"
                 >
                   No hay gastos registrados en este mes.
                 </td>

@@ -23,6 +23,7 @@ export const useExpenses = (selectedMonth: string, userId: string) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [userBudget, setUserBudget] = useState(0);
+
   useEffect(() => {
     if (!userId) {
       return;
@@ -48,8 +49,9 @@ export const useExpenses = (selectedMonth: string, userId: string) => {
 
   const filteredExpenses = useMemo(() => {
     return expenses.filter((expense) => {
-      const expenseDate = new Date(expense.date);
-      const monthName = months[expenseDate.getMonth()];
+      const monthIndex = parseInt(expense.date.split("-")[1]) - 1;
+      const monthName = months[monthIndex];
+
       return monthName === selectedMonth;
     });
   }, [expenses, selectedMonth]);
