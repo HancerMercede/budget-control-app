@@ -29,6 +29,12 @@ export interface DashboardStats {
   remaining: number;
 }
 
+export interface UserBudgetData {
+  baseBudget: number;
+  currentBudget: number;
+  currentMonth: string;
+}
+
 export interface AuthContextType {
   user: User | null;
   loading: boolean;
