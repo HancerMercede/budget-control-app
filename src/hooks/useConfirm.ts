@@ -1,18 +1,18 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 export const useConfirm = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const askConfirm = (id: string) => {
+  const askConfirm = useCallback((id: string) => {
     setSelectedId(id);
     setIsOpen(true);
-  };
+  }, []);
 
-  const closeConfirm = () => {
+  const closeConfirm = useCallback(() => {
     setIsOpen(false);
     setSelectedId(null);
-  };
+  }, []);
 
   return { isOpen, selectedId, askConfirm, closeConfirm };
 };

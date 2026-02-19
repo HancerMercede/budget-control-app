@@ -6,6 +6,7 @@ import {
   onAuthStateChanged,
   type User,
 } from "firebase/auth";
+import { type UserBudgetData } from "../types";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -26,17 +27,69 @@ export const onAuthStateChangeListener = (
   callback: (user: User | null) => void,
 ) => onAuthStateChanged(auth, callback);
 
-export const getRemoteBudget = async (userId: string): Promise<number> => {
+export const getRemoteBudget = async (
+  userId: string,
+): Promise<UserBudgetData> => {
   const docRef = doc(db, "users", userId);
   const docSnap = await getDoc(docRef);
 
   if (docSnap.exists()) {
-    return docSnap.data().monthlyBudget || 0;
+    const data = docSnap.data();
+    // Migración: Si existe monthlyBudget antiguo, migrar al nuevo formato
+    if (data.monthlyBudget && !data.baseBudget) {
+      const newData: UserBudgetData = {
+        baseBudget: data.monthlyBudget,
+        currentBudget: data.monthlyBudget,
+        currentMonth: getCurrentMonth(),
+      };
+      await setDoc(docRef, newData, { merge: true });
+      return newData;
+    }
+
+    return {
+      baseBudget: data.baseBudget || 0,
+      currentBudget: data.currentBudget || 0,
+      currentMonth: data.currentMonth || getCurrentMonth(),
+    };
   }
-  return 0;
+
+  return {
+    baseBudget: 0,
+    currentBudget: 0,
+    currentMonth: getCurrentMonth(),
+  };
 };
 
-export const updateRemoteBudget = async (userId: string, amount: number) => {
+export const updateBaseBudget = async (userId: string, amount: number) => {
   const userRef = doc(db, "users", userId);
-  await setDoc(userRef, { monthlyBudget: amount }, { merge: true });
+  const currentData = await getRemoteBudget(userId);
+
+  await setDoc(
+    userRef,
+    {
+      baseBudget: amount,
+      currentBudget: amount,
+      currentMonth: currentData.currentMonth,
+    },
+    { merge: true },
+  );
+};
+
+export const updateCurrentBudget = async (
+  userId: string,
+  budgetData: UserBudgetData,
+) => {
+  const userRef = doc(db, "users", userId);
+  await setDoc(userRef, budgetData, { merge: true });
+};
+
+export const getCurrentMonth = (): string => {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+};
+
+export const getPreviousMonth = (): string => {
+  const now = new Date();
+  now.setMonth(now.getMonth() - 1);
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 };

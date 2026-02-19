@@ -2,20 +2,25 @@ import { useState, useEffect } from "react";
 
 import { useAuth } from "../../hooks/useAuth";
 import { Edit2, Check, X, Wallet } from "lucide-react";
-import { getRemoteBudget, updateRemoteBudget } from "../../config/firebase";
+import { getRemoteBudget, updateBaseBudget } from "../../config/firebase";
+import { type UserBudgetData } from "../../types";
 
 export const BudgetCard = () => {
   const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
-  const [budget, setBudget] = useState<number>(0);
+  const [budgetData, setBudgetData] = useState<UserBudgetData>({
+    baseBudget: 0,
+    currentBudget: 0,
+    currentMonth: "",
+  });
   const [tempValue, setTempValue] = useState<string>("");
 
   useEffect(() => {
     const loadData = async () => {
       if (!user) return;
-      const val = await getRemoteBudget(user.uid);
-      setBudget(val);
-      setTempValue(val.toString());
+      const data = await getRemoteBudget(user.uid);
+      setBudgetData(data);
+      setTempValue(data.baseBudget.toString());
     };
     loadData();
   }, [user]);
@@ -25,8 +30,12 @@ export const BudgetCard = () => {
     const numValue = parseFloat(tempValue);
 
     try {
-      await updateRemoteBudget(user.uid, numValue);
-      setBudget(numValue);
+      await updateBaseBudget(user.uid, numValue);
+      setBudgetData((prev) => ({
+        ...prev,
+        baseBudget: numValue,
+        currentBudget: numValue,
+      }));
       setIsEditing(false);
     } catch (error) {
       console.error("Error saving budget:", error);
@@ -71,22 +80,29 @@ export const BudgetCard = () => {
           )}
         </div>
 
-        <div className="flex items-baseline gap-1">
-          {isEditing ? (
-            <input
-              type="number"
-              value={tempValue}
-              onChange={(e) => setTempValue(e.target.value)}
-              className="bg-slate-800/50 border border-cyan-500/30 text-2xl font-black text-white w-full rounded-xl px-3 py-1 outline-none focus:ring-2 ring-cyan-500/20"
-              autoFocus
-            />
-          ) : (
-            <>
-              <span className="text-4xl font-black text-white tracking-tighter">
-                ${budget.toLocaleString()}
-              </span>
-              <span className="text-slate-500 font-medium text-sm">USD</span>
-            </>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-baseline gap-1">
+            {isEditing ? (
+              <input
+                type="number"
+                value={tempValue}
+                onChange={(e) => setTempValue(e.target.value)}
+                className="bg-slate-800/50 border border-cyan-500/30 text-2xl font-black text-white w-full rounded-xl px-3 py-1 outline-none focus:ring-2 ring-cyan-500/20"
+                autoFocus
+              />
+            ) : (
+              <>
+                <span className="text-4xl font-black text-white tracking-tighter">
+                  ${budgetData.currentBudget.toLocaleString()}
+                </span>
+                <span className="text-slate-500 font-medium text-sm">USD</span>
+              </>
+            )}
+          </div>
+          {!isEditing && budgetData.currentBudget !== budgetData.baseBudget && (
+            <div className="text-xs text-emerald-400/70">
+              Incluye ${(budgetData.currentBudget - budgetData.baseBudget).toLocaleString()} del mes anterior
+            </div>
           )}
         </div>
       </div>

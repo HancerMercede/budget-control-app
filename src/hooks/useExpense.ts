@@ -1,8 +1,8 @@
 // src/hooks/useExpenses.ts
 import { useEffect, useState, useMemo } from "react";
 import { subscribeToExpenses } from "../services/expenseService";
-import { type Expense } from "../types";
-import { getRemoteBudget } from "../config/firebase";
+import { type Expense, type UserBudgetData } from "../types";
+import { checkAndPerformRollover } from "../services/budgetRolloverService";
 
 const months = [
   "Enero",
@@ -22,7 +22,11 @@ const months = [
 export const useExpenses = (selectedMonth: string, userId: string) => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userBudget, setUserBudget] = useState(0);
+  const [userBudgetData, setUserBudgetData] = useState<UserBudgetData>({
+    baseBudget: 0,
+    currentBudget: 0,
+    currentMonth: "",
+  });
 
   useEffect(() => {
     if (!userId) {
@@ -38,14 +42,17 @@ export const useExpenses = (selectedMonth: string, userId: string) => {
   }, [userId]);
 
   useEffect(() => {
-    const loadBudget = async () => {
+    const loadAndCheckRollover = async () => {
       if (!userId) return;
-      const amount = await getRemoteBudget(userId);
-      setUserBudget(amount);
+      // Verificar y realizar rollover si es necesario
+      const budgetData = await checkAndPerformRollover(userId, expenses);
+      setUserBudgetData(budgetData);
     };
 
-    loadBudget();
-  }, [userId]);
+    if (expenses.length >= 0) {
+      loadAndCheckRollover();
+    }
+  }, [userId, expenses]);
 
   const filteredExpenses = useMemo(() => {
     return expenses.filter((expense) => {
@@ -57,14 +64,18 @@ export const useExpenses = (selectedMonth: string, userId: string) => {
   }, [expenses, selectedMonth]);
 
   const totals = useMemo(() => {
-    const consumed = expenses.reduce((acc, curr) => acc + curr.amount, 0);
-    const budget = userBudget;
+    // Calcular consumo solo del mes seleccionado
+    const consumed = filteredExpenses.reduce(
+      (acc, curr) => acc + curr.amount,
+      0,
+    );
+    const budget = userBudgetData.currentBudget;
     return {
       consumed,
       budget,
       remaining: budget - consumed,
     };
-  }, [expenses, userBudget]);
+  }, [filteredExpenses, userBudgetData]);
 
   return { expenses, filteredExpenses, loading, ...totals };
 };
