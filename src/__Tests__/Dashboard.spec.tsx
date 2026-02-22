@@ -12,9 +12,9 @@ describe("Dashboard", () => {
 describe("Get Budget", () => {
   test("Budget must be 50,000", async () => {
     const userId = "jDADi4kIuYe3rwxJrkamgmHVSk23";
-    const budget = await getRemoteBudget(userId);
-    console.log(budget);
+    const budgetData = await getRemoteBudget(userId);
+    console.log(budgetData);
 
-    expect(budget).toBe(50000);
+    expect(budgetData.baseBudget).toBe(50000);
   });
 });
