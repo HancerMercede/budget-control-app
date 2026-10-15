@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { saveExpense, subscribeToExpenses, deleteExpense } from "../services/expenseService";
-import type { Expense } from "../types";
 import * as firestore from "firebase/firestore";
 
 // Mock Firebase Firestore
@@ -129,7 +128,7 @@ describe("expenseService", () => {
       vi.mocked(firestore.query).mockReturnValue({} as any);
       vi.mocked(firestore.where).mockReturnValue({} as any);
       vi.mocked(firestore.orderBy).mockReturnValue({} as any);
-      vi.mocked(firestore.onSnapshot).mockImplementation((q, callback: any) => {
+      vi.mocked(firestore.onSnapshot).mockImplementation((_q, callback: any) => {
         const snapshot = {
           docs: mockDocs,
         };
@@ -171,7 +170,7 @@ describe("expenseService", () => {
       vi.mocked(firestore.query).mockReturnValue({} as any);
       vi.mocked(firestore.where).mockReturnValue({} as any);
       vi.mocked(firestore.orderBy).mockReturnValue({} as any);
-      vi.mocked(firestore.onSnapshot).mockImplementation((q, callback: any) => {
+      vi.mocked(firestore.onSnapshot).mockImplementation((_q, callback: any) => {
         const snapshot = { docs: [] };
         callback(snapshot);
         return vi.fn();
