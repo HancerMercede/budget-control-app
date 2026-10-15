@@ -4,7 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 describe("AuthContext", () => {
   it("should have default value with null user and loading true", () => {
     // Arrange & Act
-    const defaultValue = AuthContext._currentValue || {
+    const defaultValue = (AuthContext as any)._currentValue || {
       user: null,
       loading: true,
     };
