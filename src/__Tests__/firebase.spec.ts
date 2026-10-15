@@ -197,7 +197,7 @@ describe("firebase config", () => {
       vi.useRealTimers();
     });
 
-    it("should update both base and current budget", async () => {
+    it("should update only baseBudget, NOT clobber currentBudget (preserves rollover)", async () => {
       const mockUserId = "user-123";
       const mockAmount = 60000;
       const mockDocRef = {};
@@ -216,18 +216,24 @@ describe("firebase config", () => {
 
       await updateBaseBudget(mockUserId, mockAmount);
 
+      // FIX: updateBaseBudget debe actualizar SOLO el base. NO pisa el
+      // currentBudget porque eso perdería el rollover acumulado. El rollover
+      // se recalcula solo el mes que viene desde el base nuevo.
       expect(firestore.setDoc).toHaveBeenCalledWith(
         mockDocRef,
         {
           baseBudget: mockAmount,
-          currentBudget: mockAmount,
           currentMonth: "2026-02",
         },
         { merge: true },
       );
+
+      // El payload NO debe incluir currentBudget (merge: true lo preserva)
+      const setDocCall = vi.mocked(firestore.setDoc).mock.calls[0];
+      expect(setDocCall[1]).not.toHaveProperty("currentBudget");
     });
 
-    it("should preserve current month when updating", async () => {
+    it("should preserve current month when updating base", async () => {
       const mockUserId = "user-123";
       const mockAmount = 75000;
       const mockDocRef = {};
@@ -250,7 +256,6 @@ describe("firebase config", () => {
         mockDocRef,
         {
           baseBudget: mockAmount,
-          currentBudget: mockAmount,
           currentMonth: "2026-01",
         },
         { merge: true },
