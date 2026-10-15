@@ -33,13 +33,17 @@ export const checkAndPerformRollover = async (
       previousMonth,
     );
 
-    // Calcular sobrante del mes anterior
-    const previousBudget = budgetData.currentBudget;
-    const remaining = previousBudget - previousMonthExpenses;
+    // FIX: el remaining se calcula contra el baseBudget, NO contra el
+    // currentBudget. Antes se usaba el currentBudget (línea anterior al fix),
+    // que podía estar inflado por rollovers previos y generaba acumulación
+    // exponencial mes a mes. Ahora cada rollover parte del base real del
+    // usuario y solo transfiere lo que SOBRÓ del presupuesto base del mes
+    // anterior — nunca del current inflado.
+    const remainingOnBase = budgetData.baseBudget - previousMonthExpenses;
+    const carriedOver = remainingOnBase > 0 ? remainingOnBase : 0;
 
-    // Rollover solo si es positivo
-    const newBudget =
-      remaining > 0 ? budgetData.baseBudget + remaining : budgetData.baseBudget;
+    // Reset al base + lo que ahorraste del presupuesto base del mes anterior
+    const newBudget = budgetData.baseBudget + carriedOver;
 
     const newBudgetData: UserBudgetData = {
       baseBudget: budgetData.baseBudget,

@@ -64,11 +64,16 @@ export const updateBaseBudget = async (userId: string, amount: number) => {
   const userRef = doc(db, "users", userId);
   const currentData = await getRemoteBudget(userId);
 
+  // FIX: NO pisamos currentBudget. merge:true preserva el valor actual en
+  // Firestore, que puede contener el rollover acumulado del mes anterior.
+  // El rollover del mes que viene recalcula currentBudget desde el base
+  // nuevo (ver budgetRolloverService), así que no necesitamos tocarlo acá.
+  // Si el usuario quiere resetear el rollover acumulado, eso debería ser
+  // una acción explícita y separada, no un side-effect de editar el base.
   await setDoc(
     userRef,
     {
       baseBudget: amount,
-      currentBudget: amount,
       currentMonth: currentData.currentMonth,
     },
     { merge: true },

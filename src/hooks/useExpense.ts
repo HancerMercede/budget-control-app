@@ -42,17 +42,23 @@ export const useExpenses = (selectedMonth: string, userId: string) => {
   }, [userId]);
 
   useEffect(() => {
+    // FIX: NO disparar el rollover hasta que el subscriber haya emitido al
+    // menos una vez (loading=false). Antes, la condición
+    // `if (expenses.length >= 0)` era siempre true incluso con expenses=[],
+    // entonces el rollover se ejecutaba con el snapshot vacío ANTES de que
+    // llegaran los gastos reales del mes anterior. Eso causaba
+    // `remaining = baseBudget - 0 = baseBudget` → `newBudget = 2 * base`,
+    // corrompiendo el currentBudget en cada cambio de mes.
+    if (!userId || loading) return;
+
     const loadAndCheckRollover = async () => {
-      if (!userId) return;
       // Verificar y realizar rollover si es necesario
       const budgetData = await checkAndPerformRollover(userId, expenses);
       setUserBudgetData(budgetData);
     };
 
-    if (expenses.length >= 0) {
-      loadAndCheckRollover();
-    }
-  }, [userId, expenses]);
+    loadAndCheckRollover();
+  }, [userId, expenses, loading]);
 
   const filteredExpenses = useMemo(() => {
     return expenses.filter((expense) => {
